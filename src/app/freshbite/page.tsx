@@ -69,6 +69,7 @@ export default function FreshBite() {
   const [isTyping, setIsTyping] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [messageReactions, setMessageReactions] = useState<Record<string, string>>({});
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -994,6 +995,26 @@ export default function FreshBite() {
                   lineHeight: 1.5,
                   whiteSpace: "pre-wrap",
                 }}>
+                  {/* Reaction buttons */}
+                  <div style={{ display: "flex", gap: 4, marginTop: 4, marginLeft: 4 }}>
+                    {["👍", "❤️", "😂"].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => setMessageReactions(prev => ({ ...prev, [msg.id]: emoji }))}
+                        style={{
+                          background: messageReactions[msg.id] === emoji ? "rgba(232,93,4,0.1)" : "transparent",
+                          border: `1px solid ${messageReactions[msg.id] === emoji ? "#e85d04" : "rgba(0,0,0,0.1)"}`,
+                          borderRadius: 100,
+                          padding: "2px 8px",
+                          cursor: "pointer",
+                          fontSize: "0.75rem",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {messageReactions[msg.id] === emoji ? messageReactions[msg.id] : emoji}
+                      </button>
+                    ))}
+                  </div>
                   {msg.text}
                 </div>
               </div>
