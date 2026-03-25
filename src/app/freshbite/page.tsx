@@ -64,6 +64,8 @@ export default function FreshBite() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<"default" | "granted" | "denied">("default");
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -84,6 +86,16 @@ export default function FreshBite() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
+
+  // Check notification permission on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setNotifPermission(Notification.permission as "default" | "granted" | "denied");
+      if (Notification.permission === "default") {
+        setTimeout(() => setShowNotifPrompt(true), 5000);
+      }
+    }
+  }, []);
 
   // Simulate order progress
   useEffect(() => {
@@ -154,6 +166,22 @@ export default function FreshBite() {
 
   const addNotification = (text: string, type: string) => {
     setNotifications(prev => [{ id: `notif-${Date.now()}`, text, type, time: Date.now() }, ...prev.slice(0, 4)]);
+  };
+
+  const requestNotifPermission = async () => {
+    if (!("Notification" in window)) {
+      alert("Notifications not supported in this browser.");
+      return;
+    }
+    const result = await Notification.requestPermission();
+    setNotifPermission(result as "default" | "granted" | "denied");
+    setShowNotifPrompt(false);
+    if (result === "granted") {
+      new Notification("🔔 FreshBite Notifications Enabled!", {
+        body: "You'll get real-time updates on your orders!",
+        icon: "🍕",
+      });
+    }
   };
 
   // AI Chat logic
@@ -375,6 +403,9 @@ export default function FreshBite() {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 24 }}>🍕</span>
           <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px" }}>Fresh<span style={{ color: "#e85d04" }}>Bite</span></span>
+          {notifPermission === "granted" && (
+            <span style={{ fontSize: "0.7rem", background: "#22c55e", color: "white", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>🔔</span>
+          )}
         </div>
         
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -676,6 +707,13 @@ export default function FreshBite() {
                     <span style={{ color: "#888" }}>Points earned</span>
                     <span style={{ fontWeight: 700, color: "#e85d04" }}>+{activeOrder.points} ⭐</span>
                   </div>
+
+                  {/* Social Share */}
+                  <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+                    <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🍕 Just ordered from FreshBite! My order ${activeOrder.id} is on the way! Total: ₹${activeOrder.total} #FoodDelivery`)}`, "_blank")} style={{ flex: 1, background: "#1DA1F2", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>🐦 Share</button>
+                    <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🍕 FreshBite order ${activeOrder.id} incoming! Total: ₹${activeOrder.total}. Track live: https://freshbite.app/track/${activeOrder.id}`)}`, "_blank")} style={{ flex: 1, background: "#25D366", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📱 WhatsApp</button>
+                    <button onClick={() => { navigator.clipboard.writeText(`FreshBite Order ${activeOrder.id} — ₹${activeOrder.total} — Track: https://freshbite.app/track/${activeOrder.id}`).catch(() => {}); }} style={{ flex: 1, background: "#f5f5f0", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📋 Copy</button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -792,6 +830,51 @@ export default function FreshBite() {
       >
         💬
       </button>
+
+      {/* Push Notification Permission Banner */}
+      {showNotifPrompt && notifPermission === "default" && (
+        <div style={{
+          position: "fixed",
+          bottom: 100,
+          left: 16,
+          right: 16,
+          maxWidth: 360,
+          margin: "0 auto",
+          background: "white",
+          borderRadius: 16,
+          padding: "14px 16px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          zIndex: 60,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          animation: "slideUp 0.4s ease",
+        }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <span style={{ fontSize: "1.5rem" }}>🔔</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 2 }}>Enable Notifications</div>
+              <div style={{ fontSize: "0.75rem", color: "#666", lineHeight: 1.4 }}>Get real-time order updates, exclusive deals & delivery alerts!</div>
+            </div>
+            <button onClick={() => setShowNotifPrompt(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: "1rem" }}>✕</button>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setShowNotifPrompt(false)}
+              style={{ flex: 1, background: "rgba(0,0,0,0.05)", border: "none", borderRadius: 8, padding: "8px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer", color: "#666" }}
+            >
+              Not now
+            </button>
+            <button
+              onClick={requestNotifPermission}
+              style={{ flex: 1, background: "#e85d04", border: "none", borderRadius: 8, padding: "8px", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer", color: "white" }}
+            >
+              Enable 🔔
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Chat Panel */}
       {showChat && (
