@@ -561,6 +561,53 @@ export default function FreshBite() {
               ))}
             </div>
 
+            {/* Quick Order Combos */}
+            {selectedCategory === "all" && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <h3 style={{ fontWeight: 700, fontSize: "0.9rem" }}>⚡ Quick Combos</h3>
+                  <span style={{ fontSize: "0.75rem", color: "#888" }}>Save up to 15%</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+                  {[
+                    { id: "combo1", name: "Burger Combo", desc: "Smash Burger + Fries + Coke", price: 349, original: 399, emoji: "🍔", savings: 50, items: ["Smash Burger", "Fries", "Coke"] },
+                    { id: "combo2", name: "Pizza Deal", desc: "Pepperoni Pizza + Garlic Bread + Coke", price: 449, original: 529, emoji: "🍕", savings: 80, items: ["Pepperoni Pizza", "Garlic Bread", "Coke"] },
+                    { id: "combo3", name: "Healthy Bowl", desc: "Caesar Salad + Berry Smoothie", price: 329, original: 398, emoji: "🥗", savings: 69, items: ["Caesar Salad Bowl", "Berry Smoothie Bowl"] },
+                  ].map(combo => {
+                    const comboItems = MENU_ITEMS.filter(mi => combo.items.includes(mi.name));
+                    return (
+                      <div key={combo.id} style={{
+                        background: "linear-gradient(135deg, #fff8f0, #fff)",
+                        border: "1px solid rgba(232,93,4,0.15)",
+                        borderRadius: 14,
+                        padding: 14,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        position: "relative",
+                        overflow: "hidden",
+                      }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 20px rgba(232,93,4,0.12)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
+                        onClick={() => comboItems.forEach(item => addToCart(item))}
+                      >
+                        <div style={{ position: "absolute", top: 8, right: 8, background: "#22c55e", color: "white", fontSize: "0.65rem", fontWeight: 700, padding: "2px 6px", borderRadius: 100 }}>SAVE ₹{combo.savings}</div>
+                        <span style={{ fontSize: "1.5rem", display: "block", marginBottom: 6 }}>{combo.emoji}</span>
+                        <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 2 }}>{combo.name}</div>
+                        <div style={{ fontSize: "0.72rem", color: "#888", marginBottom: 8 }}>{combo.desc}</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div>
+                            <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#e85d04" }}>₹{combo.price}</span>
+                            <span style={{ fontSize: "0.72rem", color: "#aaa", textDecoration: "line-through", marginLeft: 6 }}>₹{combo.original}</span>
+                          </div>
+                          <button style={{ background: "#e85d04", border: "none", borderRadius: 8, padding: "4px 12px", color: "white", fontWeight: 700, fontSize: "0.75rem", cursor: "pointer" }}>Add</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Menu Grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16, paddingBottom: 20 }}>
               {filteredItems.map(item => (
