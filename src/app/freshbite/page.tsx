@@ -76,6 +76,9 @@ export default function FreshBite() {
   const [recentItems, setRecentItems] = useState<number[]>([]);
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
   const [orderNote, setOrderNote] = useState("");
+  const [showWheel, setShowWheel] = useState(false);
+  const [wheelSpinning, setWheelSpinning] = useState(false);
+  const [wheelResult, setWheelResult] = useState<string | null>(null);
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -157,6 +160,33 @@ export default function FreshBite() {
 
   const placeOrder = () => {
     if (cart.length === 0) return;
+    
+    // Apply discount if wheel was spun
+    let finalTotal = cartTotal;
+    if (wheelResult && wheelResult !== "Try again") {
+      const discount = wheelResult.includes("%") ? Math.round(cartTotal * parseInt(wheelResult) / 100) : parseInt(wheelResult);
+      finalTotal = cartTotal - discount;
+      setCart([]);
+      const order: Order = {
+        id: `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        items: [...cart],
+        status: "placed",
+        eta: 18,
+        total: finalTotal,
+        points: Math.floor(finalTotal / 10),
+        createdAt: Date.now(),
+      };
+      setActiveOrder(order);
+      setCart([]);
+      setShowCart(false);
+      setShowOrderTracker(true);
+      setActiveTab("orders");
+      setLoyaltyPoints(prev => prev + order.points);
+      addNotification(`🎉 Order ${order.id} placed! ${wheelResult.includes("%") ? wheelResult + " off!" : "₹" + wheelResult + " cashback!"}`, "success");
+      setWheelResult(null);
+      return;
+    }
+
     const order: Order = {
       id: `ORD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
       items: [...cart],
@@ -1044,6 +1074,117 @@ export default function FreshBite() {
       >
         💬
       </button>
+
+      {/* Spin the Wheel Modal */}
+      {showWheel && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 70,
+          background: "rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <div style={{
+            background: "white",
+            borderRadius: 24,
+            padding: 32,
+            maxWidth: 360,
+            width: "90%",
+            textAlign: "center",
+            animation: "slideUp 0.3s ease",
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🎰</div>
+            <h2 style={{ fontWeight: 800, marginBottom: 4 }}>Spin & Win!</h2>
+            <p style={{ fontSize: "0.85rem", color: "#888", marginBottom: 20 }}>Spin the wheel for a discount on your order!</p>
+            
+            {!wheelSpinning && !wheelResult && (
+              <button
+                onClick={() => {
+                  setWheelSpinning(true);
+                  const prizes = ["5%", "10%", "15%", "₹20", "₹50", "Try again"];
+                  const prize = prizes[Math.floor(Math.random() * prizes.length)];
+                  setTimeout(() => {
+                    setWheelSpinning(false);
+                    setWheelResult(prize);
+                  }, 2000);
+                }}
+                style={{
+                  background: "linear-gradient(135deg, #e85d04, #ff8c42)",
+                  border: "none",
+                  borderRadius: 14,
+                  padding: "14px 36px",
+                  color: "white",
+                  fontWeight: 800,
+                  fontSize: "1rem",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(232,93,4,0.4)",
+                }}
+              >
+                SPIN! 🎰
+              </button>
+            )}
+            
+            {wheelSpinning && (
+              <div style={{
+                fontSize: "3rem",
+                animation: "spin 2s ease-in-out infinite",
+                margin: "20px 0",
+              }}>
+                🎰
+              </div>
+            )}
+            
+            {wheelResult && (
+              <div style={{
+                background: wheelResult === "Try again" ? "rgba(0,0,0,0.05)" : "rgba(34,197,94,0.1)",
+                border: `1px solid ${wheelResult === "Try again" ? "rgba(0,0,0,0.1)" : "#22c55e"}`,
+                borderRadius: 16,
+                padding: 20,
+                marginBottom: 16,
+              }}>
+                <div style={{ fontSize: "1.5rem", fontWeight: 800, marginBottom: 4 }}>
+                  {wheelResult === "Try again" ? "😅" : "🎉"} {wheelResult === "Try again" ? "Better luck next time!" : `You won ${wheelResult} off!`}
+                </div>
+              </div>
+            )}
+            
+            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+              {wheelResult && (
+                <button
+                  onClick={() => { setShowWheel(false); }}
+                  style={{
+                    background: "rgba(0,0,0,0.05)",
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 10,
+                    padding: "10px 20px",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  Skip
+                </button>
+              )}
+              <button
+                onClick={() => { setShowWheel(false); }}
+                style={{
+                  background: "#e85d04",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 20px",
+                  color: "white",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                }}
+              >
+                {wheelResult ? "Use Discount!" : "Close"}
+              </button>
+            </div>
+            <style>{`
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(720deg); } }
+            `}</style>
+          </div>
+        </div>
+      )}
 
       {/* Push Notification Permission Banner */}
       {showNotifPrompt && notifPermission === "default" && (
