@@ -50,6 +50,13 @@ export default function RocketGame() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   const [speedRunStart, setSpeedRunStart] = useState<number | null>(null);
+  const [dailyChallenge, setDailyChallenge] = useState({ target: 500, reward: "100 Bonus Points", completed: false });
+  const dailyChallenges = [
+    { target: 500, reward: "100 Bonus Points", label: "Score 500 points" },
+    { target: 1000, reward: "200 Bonus Points", label: "Score 1000 points" },
+    { target: 5, reward: "Shield Power-up", label: "Reach Level 5" },
+    { target: 0, reward: "50 Bonus Points", label: "Play 3 games" },
+  ];
   const [speedRunTime, setSpeedRunTime] = useState<number>(0);
   const [showSettings, setShowSettings] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
