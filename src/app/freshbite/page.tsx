@@ -74,6 +74,7 @@ export default function FreshBite() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [messageReactions, setMessageReactions] = useState<Record<string, string>>({});
   const [recentItems, setRecentItems] = useState<number[]>([]);
+  const [pastOrders, setPastOrders] = useState<Order[]>([]);
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -882,6 +883,43 @@ export default function FreshBite() {
                 </div>
               </div>
             ) : (
+              <div>{pastOrders.length > 0 && (
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h3 style={{ fontWeight: 700, fontSize: "0.95rem" }}>📋 Past Orders</h3>
+                    <span style={{ fontSize: "0.75rem", color: "#888" }}>{pastOrders.length} orders</span>
+                  </div>
+                  {pastOrders.map(o => (
+                    <div key={o.id} style={{
+                      background: "white", border: "1px solid rgba(0,0,0,0.06)",
+                      borderRadius: 12, padding: 14, marginBottom: 10,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{o.id}</div>
+                          <div style={{ fontSize: "0.75rem", color: "#888" }}>{o.items.length} items · ₹{o.total}</div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            o.items.forEach(ci => addToCart(ci.item));
+                            setActiveTab("menu");
+                            setShowCart(true);
+                          }}
+                          style={{
+                            background: "#e85d04", border: "none", borderRadius: 8,
+                            padding: "6px 14px", color: "white", fontWeight: 700,
+                            fontSize: "0.75rem", cursor: "pointer",
+                          }}
+                        >
+                          🔄 Reorder
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {pastOrders.length === 0 && (
               <div style={{ textAlign: "center", paddingTop: 60 }}>
                 <span style={{ fontSize: 64, display: "block", marginBottom: 16 }}>📦</span>
                 <h2 style={{ fontWeight: 700, marginBottom: 8 }}>No active orders</h2>
@@ -901,6 +939,8 @@ export default function FreshBite() {
                 >
                   Browse Menu 🍕
                 </button>
+              </div>
+              )}
               </div>
             )}
           </div>
