@@ -64,6 +64,7 @@ export default function FreshBite() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [notifPermission, setNotifPermission] = useState<"default" | "granted" | "denied">("default");
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -246,6 +247,16 @@ export default function FreshBite() {
     
     return "🤖 I can help you order food! Try:\n• \"Order pizza\"\n• \"Show popular items\"\n• \"What's my rewards?\"\n• \"Track my order\"\n• \"Show my cart\"";
   };
+
+  const speak = useCallback((text: string) => {
+    if (!voiceEnabled || typeof window === "undefined") return;
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.1;
+      utterance.pitch = 1;
+      speechSynthesis.speak(utterance);
+    }
+  }, [voiceEnabled]);
 
   const toggleVoice = useCallback(() => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
