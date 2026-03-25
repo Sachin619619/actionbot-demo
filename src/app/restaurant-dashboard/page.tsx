@@ -58,6 +58,8 @@ export default function RestaurantDashboard() {
   const [menu, setMenu] = useState<MenuItem[]>(menuItems);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "menu" | "overview">("orders");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [notification, setNotification] = useState<string | null>(null);
   const notifTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [liveOrder, setLiveOrder] = useState<{id: string; customer: string} | null>(null);
@@ -188,7 +190,32 @@ export default function RestaurantDashboard() {
         {activeTab === "orders" && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Search and filter bar */}
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  value={orderSearch}
+                  onChange={e => setOrderSearch(e.target.value)}
+                  placeholder="Search by order ID or customer..."
+                  style={{ flex: 1, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "9px 14px", color: "white", fontSize: 13, outline: "none" }}
+                />
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value)}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "9px 14px", color: "white", fontSize: 13, outline: "none" }}
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="preparing">Preparing</option>
+                  <option value="ready">Ready</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+              </div>
               {[...orders]
+                .filter(o => {
+                  const matchesSearch = orderSearch === "" || o.id.toLowerCase().includes(orderSearch.toLowerCase()) || o.customer.toLowerCase().includes(orderSearch.toLowerCase());
+                  const matchesStatus = statusFilter === "all" || o.status === statusFilter;
+                  return matchesSearch && matchesStatus;
+                })
                 .sort((a, b) => statusFlow.indexOf(a.status) - statusFlow.indexOf(b.status))
                 .map(order => {
                   const st = statusLabels[order.status];
