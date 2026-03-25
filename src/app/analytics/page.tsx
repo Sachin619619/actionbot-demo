@@ -3,6 +3,17 @@ import { useState, useEffect } from "react";
 
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState<"today" | "week" | "month">("week");
+  const [liveRevenue, setLiveRevenue] = useState(234580);
+  const [liveOrders, setLiveOrders] = useState(1847);
+  
+  // Simulate live counter updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveRevenue(prev => prev + Math.floor(Math.random() * 200));
+      setLiveOrders(prev => prev + (Math.random() > 0.7 ? 1 : 0));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const dataSets = {
     today: {
@@ -51,8 +62,14 @@ export default function Analytics() {
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
             <span style={{ fontSize: 28 }}>📊</span>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 20 }}>Order Analytics</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontWeight: 800, fontSize: 20 }}>Order Analytics</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "2px 8px" }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", animation: "livePulse 1.5s ease-in-out infinite" }} />
+                  <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 700 }}>LIVE</span>
+                </div>
+              </div>
               <div style={{ fontSize: 12, color: "#888" }}>FreshBite Platform — Real-time insights</div>
             </div>
           </div>
