@@ -71,6 +71,7 @@ export default function FreshBite() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [messageReactions, setMessageReactions] = useState<Record<string, string>>({});
+  const [recentItems, setRecentItems] = useState<number[]>([]);
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -134,6 +135,10 @@ export default function FreshBite() {
       type: "success",
       time: Date.now(),
     }, ...prev.slice(0, 4)]);
+    setRecentItems(prev => {
+      const filtered = prev.filter(id => id !== item.id);
+      return [item.id, ...filtered].slice(0, 6);
+    });
   };
 
   const removeFromCart = (itemId: number) => {
@@ -403,6 +408,27 @@ export default function FreshBite() {
         </div>
       )}
 
+      {/* Deal of the Day Banner */}
+      {activeTab === "menu" && !activeOrder && (
+        <div style={{
+          background: "linear-gradient(135deg, #1a1a1a, #2d1a0a)",
+          color: "white",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          animation: "slideUp 0.4s ease",
+          borderBottom: "1px solid rgba(255,215,0,0.2)",
+        }}>
+          <span style={{ fontSize: "1.3rem" }}>🏷️</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: "0.82rem" }}>Deal of the Day!</div>
+            <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>Get 20% off on all pizzas — use code: PIZZA20</div>
+          </div>
+          <span style={{ background: "rgba(255,215,0,0.15)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.3)", borderRadius: 8, padding: "3px 10px", fontWeight: 700, fontSize: "0.75rem" }}>20% OFF</span>
+        </div>
+      )}
+
       {/* Nav */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 50,
@@ -571,6 +597,36 @@ export default function FreshBite() {
                 </button>
               ))}
             </div>
+
+            {/* Recently Viewed */}
+            {recentItems.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <h3 style={{ fontWeight: 700, fontSize: "0.88rem", marginBottom: 10, color: "#666" }}>🕐 Recently Viewed</h3>
+                <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
+                  {recentItems.map(id => {
+                    const item = MENU_ITEMS.find(i => i.id === id);
+                    if (!item) return null;
+                    return (
+                      <div key={id} style={{
+                        background: "white",
+                        border: "1px solid rgba(0,0,0,0.06)",
+                        borderRadius: 12,
+                        padding: "8px 14px",
+                        minWidth: 120,
+                        textAlign: "center",
+                        cursor: "pointer",
+                      }}
+                        onClick={() => addToCart(item)}
+                      >
+                        <div style={{ fontSize: "1.2rem", marginBottom: 4 }}>{item.emoji}</div>
+                        <div style={{ fontWeight: 600, fontSize: "0.75rem", marginBottom: 2 }}>{item.name.split(" ")[0]}</div>
+                        <div style={{ fontWeight: 800, fontSize: "0.8rem", color: "#e85d04" }}>₹{item.price}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Quick Order Combos */}
             {selectedCategory === "all" && (
