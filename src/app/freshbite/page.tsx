@@ -75,6 +75,7 @@ export default function FreshBite() {
   const [messageReactions, setMessageReactions] = useState<Record<string, string>>({});
   const [recentItems, setRecentItems] = useState<number[]>([]);
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
+  const [orderNote, setOrderNote] = useState("");
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -849,6 +850,14 @@ export default function FreshBite() {
                           animation: "bikeMove 2s ease-in-out infinite",
                           filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
                         }}>🛵</div>
+                        {/* Animated delivery route */}
+                        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 100 60" preserveAspectRatio="none">
+                          <path d={`M ${5} ${30} Q ${30} ${activeOrder.status === "out-for-delivery" ? 25 + Math.sin(Date.now() / 500) * 5 : 30} ${Math.max(10, Math.min(85, 100 - activeOrder.eta * 4 + 2))} ${30}`} stroke="rgba(232,93,4,0.2)" strokeWidth="1" fill="none" strokeDasharray="3,3" />
+                          <circle cx={`${Math.max(10, Math.min(85, 100 - activeOrder.eta * 4))}`} cy="30" r="3" fill="#e85d04" opacity="0.5">
+                            <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+                          </circle>
+                        </svg>
                         <div style={{ 
                           position: "absolute", 
                           left: `${Math.max(10, Math.min(85, 100 - activeOrder.eta * 4 - 8))}%`,
