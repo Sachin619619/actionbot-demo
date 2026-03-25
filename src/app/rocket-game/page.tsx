@@ -48,6 +48,7 @@ export default function RocketGame() {
   const [isListening, setIsListening] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const msgIdRef = useRef(0);
@@ -562,6 +563,7 @@ export default function RocketGame() {
         if (gameState.started && !gameState.gameOver) setGameState(prev => ({ ...prev, paused: !prev.paused }));
       }
       if (e.key === "r" || e.key === "R") { if (gameState.gameOver) resetGame(); }
+      if (e.key === "/") { e.preventDefault(); setShowPalette(true); }
     };
     window.addEventListener("keydown", handlePause);
     return () => window.removeEventListener("keydown", handlePause);
@@ -581,14 +583,49 @@ export default function RocketGame() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => { setShowBot(false); setShowLeaderboard(!showLeaderboard); }} style={{ background: showLeaderboard ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🏆 Leaderboard</button>
-          <button onClick={() => { setShowLeaderboard(false); setShowBot(!showBot); }} style={{ background: showBot ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🤖 AI Copilot</button>
-          <button onClick={resetGame} style={{ background: "#FF6B35", border: "none", borderRadius: 10, padding: "7px 16px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700 }}>{gameState.started ? "🔄 Restart" : "🎮 Start"}</button>
+          <button onClick={() => setShowPalette(true)} style={{ background: showPalette ? "#a855f7" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 12px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }} title="Command Palette (press /)">⌘</button>
+          <button onClick={() => { setShowBot(false); setShowLeaderboard(!showLeaderboard); }} style={{ background: showLeaderboard ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🏆</button>
+          <button onClick={() => { setShowLeaderboard(false); setShowBot(!showBot); }} style={{ background: showBot ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🤖</button>
+          <button onClick={resetGame} style={{ background: "#FF6B35", border: "none", borderRadius: 10, padding: "7px 16px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700 }}>{gameState.started ? "🔄" : "🎮"}</button>
         </div>
       </div>
 
       <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 660 }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
+
+          {/* Command Palette */}
+          {showPalette && (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "rgba(10,10,26,0.97)",
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.875rem",
+              zIndex: 35,
+              padding: "1.5rem",
+            }}>
+              <div style={{ fontSize: 36 }}>⌘</div>
+              <h2 style={{ fontSize: "1.2rem", fontWeight: 800 }}>Command Palette</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", maxWidth: 280 }}>
+                {[
+                  { key: "/", cmd: "Open command palette" },
+                  { key: "P", cmd: "Pause / Resume game" },
+                  { key: "R", cmd: "Restart (after game over)" },
+                  { key: "B", cmd: "Toggle AI Copilot" },
+                  { key: "Esc", cmd: "Close palette" },
+                ].map(item => (
+                  <div key={item.key} style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: "7px 14px" }}>
+                    <span style={{ background: "#a855f7", borderRadius: 6, padding: "2px 8px", fontSize: "0.75rem", fontWeight: 700, minWidth: 36, textAlign: "center" }}>{item.key}</span>
+                    <span style={{ fontSize: "0.8rem" }}>{item.cmd}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowPalette(false)} style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 18px", color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", cursor: "pointer", marginTop: 4 }}>Esc to close</button>
+            </div>
+          )}
 
           {/* Tutorial Modal */}
           {showTutorial && (
