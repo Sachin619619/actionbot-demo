@@ -589,6 +589,48 @@ export default function RocketGame() {
 
       <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 660 }}>
         <div style={{ position: "relative", flexShrink: 0 }}>
+
+          {/* Tutorial Modal */}
+          {showTutorial && (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "rgba(10,10,26,0.96)",
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "1rem",
+              zIndex: 30,
+              padding: "1.5rem",
+            }}>
+              <div style={{ fontSize: 40 }}>🚀</div>
+              <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>How to Play</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", maxWidth: 280, textAlign: "left" }}>
+                {[
+                  { e: "⬆️", t: "Thrust", d: "W or Arrow Up — fight gravity!" },
+                  { e: "⬅️➡️", t: "Move", d: "A/D or Left/Right arrows" },
+                  { e: "💰", t: "Coins", d: "Collect coins (+10 pts each)" },
+                  { e: "💀", t: "Avoid", d: "Stay away from asteroids!" },
+                  { e: "🛡️", t: "Power-ups", d: "Shield, fuel, slow-mo gems!" },
+                  { e: "⭐", t: "Level Up", d: "Clear all coins to advance!" },
+                ].map(item => (
+                  <div key={item.t} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: "1.1rem", minWidth: 24 }}>{item.e}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "0.82rem" }}>{item.t}</div>
+                      <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>{item.d}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowTutorial(false)} style={{
+                background: "#FF6B35", border: "none", borderRadius: 12,
+                padding: "10px 28px", color: "white", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", marginTop: "0.5rem",
+              }}>Got it! 🚀</button>
+            </div>
+          )}
+
           <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} style={{ borderRadius: 14, border: "2px solid rgba(255,255,255,0.08)", display: "block" }} />
 
           {!gameState.started && !gameState.gameOver && (
