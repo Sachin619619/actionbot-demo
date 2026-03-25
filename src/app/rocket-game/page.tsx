@@ -31,6 +31,7 @@ interface GameState {
 }
 
 const SAVED_KEY = "actionbot_rocket_v3";
+const LEADERBOARD_KEY = "actionbot_rocket_leaderboard";
 
 export default function RocketGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -39,6 +40,8 @@ export default function RocketGame() {
     paused: false, started: false, combo: 0, slowmo: false,
   });
   const [showBot, setShowBot] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<{score: number; level: number; date: string}[]>([]);
   const [botMessages, setBotMessages] = useState<{ from: string; text: string; time: string }[]>([]);
   const [botInput, setBotInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -58,6 +61,7 @@ export default function RocketGame() {
   ];
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
   const [showAchievement, setShowAchievement] = useState<{ label: string; emoji: string } | null>(null);
+  const [confetti, setConfetti] = useState<{ id: number; x: number; color: string; delay: number; size: number }[]>([]);
 
   const rocketRef = useRef<Rocket>({
     x: 300, y: 300, vx: 0, vy: 0, angle: 0, fuel: 100,
@@ -144,6 +148,16 @@ export default function RocketGame() {
     }
   };
 
+  const shareScore = () => {
+    const text = `🚀 I scored ${gameState.score} points in Rocket Game! High Score: ${gameState.highScore}! Level ${gameState.level}! Can you beat me? #RocketGame #ActionBot`;
+    if (navigator.share) {
+      navigator.share({ title: "Rocket Game Score", text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).catch(() => {});
+      alert("Score copied to clipboard!");
+    }
+  };
+
   const resetGame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -193,7 +207,17 @@ export default function RocketGame() {
         setUnlockedAchievements(prev => {
           if (prev.includes(ach.id)) return prev;
           setShowAchievement({ label: ach.label, emoji: ach.emoji });
-          setTimeout(() => setShowAchievement(null), 3000);
+          // Spawn confetti
+          const colors = ["#FF6B35", "#FFD93D", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"];
+          const newConfetti = Array.from({ length: 30 }, (_, i) => ({
+            id: Date.now() + i,
+            x: Math.random() * 100,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            delay: Math.random() * 0.5,
+            size: Math.random() * 6 + 4,
+          }));
+          setConfetti(newConfetti);
+          setTimeout(() => { setConfetti([]); setShowAchievement(null); }, 3000);
           return [...prev, ach.id];
         });
       }
@@ -515,7 +539,8 @@ export default function RocketGame() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setShowBot(!showBot)} style={{ background: showBot ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🤖 AI Copilot</button>
+          <button onClick={() => { setShowBot(false); setShowLeaderboard(!showLeaderboard); }} style={{ background: showLeaderboard ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🏆 Leaderboard</button>
+          <button onClick={() => { setShowLeaderboard(false); setShowBot(!showBot); }} style={{ background: showBot ? "#FF6B35" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "7px 14px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 600 }}>🤖 AI Copilot</button>
           <button onClick={resetGame} style={{ background: "#FF6B35", border: "none", borderRadius: 10, padding: "7px 16px", color: "white", cursor: "pointer", fontSize: "0.78rem", fontWeight: 700 }}>{gameState.started ? "🔄 Restart" : "🎮 Start"}</button>
         </div>
       </div>
