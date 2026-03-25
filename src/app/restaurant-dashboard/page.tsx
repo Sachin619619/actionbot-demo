@@ -60,6 +60,8 @@ export default function RestaurantDashboard() {
   const [activeTab, setActiveTab] = useState<"orders" | "menu" | "overview">("orders");
   const [orderSearch, setOrderSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const [inventoryAlert, setInventoryAlert] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const notifTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [liveOrder, setLiveOrder] = useState<{id: string; customer: string} | null>(null);
@@ -114,6 +116,9 @@ export default function RestaurantDashboard() {
   const preparingCount = orders.filter(o => o.status === "preparing").length;
   const readyCount = orders.filter(o => o.status === "ready").length;
   const avgRating = (orders.filter(o => o.rating).reduce((s, o) => s + (o.rating || 0), 0) / orders.filter(o => o.rating).length).toFixed(1);
+
+  // Low stock items (ordersToday > 20)
+  const lowStockItems = menu.filter(m => m.ordersToday > 20 && m.available);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0f1117", color: "white", fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif" }}>
@@ -183,6 +188,36 @@ export default function RestaurantDashboard() {
             {tab === "orders" ? "📋 Orders" : tab === "menu" ? "🍽️ Menu" : "📊 Overview"}
           </button>
         ))}
+
+      {/* Inventory Alert Banner */}
+      {lowStockItems.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 12px" }}>
+          <div style={{
+            background: "rgba(245,158,11,0.1)",
+            border: "1px solid rgba(245,158,11,0.3)",
+            borderRadius: 12,
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <span style={{ fontSize: "1.3rem" }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#f59e0b" }}>Inventory Alert — High Demand!</div>
+              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)" }}>
+                {lowStockItems.map(m => m.name).join(", ")} — consider restocking!
+              </div>
+            </div>
+            <button
+              onClick={() => { setActiveTab("menu"); }}
+              style={{ background: "#f59e0b", border: "none", borderRadius: 8, padding: "6px 14px", color: "white", fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}
+            >
+              View Menu
+            </button>
+          </div>
+        </div>
+      )}
+
       </div>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 40px" }}>
