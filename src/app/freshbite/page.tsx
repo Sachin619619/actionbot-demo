@@ -66,6 +66,13 @@ export default function FreshBite() {
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
+  const [liveCount, setLiveCount] = useState(23);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveCount(prev => Math.max(15, prev + Math.floor(Math.random() * 5) - 2));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
   const LANGUAGES = ["English", "हिंदी", "ಕನ್ನಡ", "தமிழ்", "తెలుగు"];
   const [notifPermission, setNotifPermission] = useState<"default" | "granted" | "denied">("default");
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
@@ -442,6 +449,22 @@ export default function FreshBite() {
           </button>
         </div>
       )}
+
+      {/* Social Proof Banner */}
+      <div style={{
+        background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+        padding: "8px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        borderBottom: "1px solid rgba(34,197,94,0.1)",
+        animation: "slideUp 0.4s ease",
+      }}>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", animation: "livePulse 1.5s ease-in-out infinite" }} />
+        <span style={{ fontSize: "0.75rem", color: "#166534", fontWeight: 600 }}>
+          🔥 {liveCount} people ordering right now in your area!
+        </span>
+      </div>
 
       {/* Deal of the Day Banner */}
       {activeTab === "menu" && !activeOrder && (
