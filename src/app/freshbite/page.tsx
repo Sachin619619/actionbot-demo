@@ -302,6 +302,67 @@ export default function FreshBite() {
         .pop-in { animation: pop 0.3s ease; }
       `}</style>
 
+      {/* Live Activity Banner */}
+      {activeOrder && activeOrder.status !== "delivered" && (
+        <div style={{
+          background: "linear-gradient(135deg, #1a1a1a, #2d2d2d)",
+          color: "white",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          animation: "slideUp 0.4s ease",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 3s linear infinite",
+          }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, position: "relative" }}>
+            <span style={{ fontSize: "1.3rem", animation: "livePulse 2s ease-in-out infinite" }}>
+              {ORDER_STEPS.find(s => s.key === activeOrder.status)?.emoji}
+            </span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "0.8rem" }}>
+                {ORDER_STEPS.find(s => s.key === activeOrder.status)?.label} — {activeOrder.eta}m min
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.5)" }}>
+                {activeOrder.id} · {activeOrder.items.length} items · ₹{activeOrder.total}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, position: "relative" }}>
+            {ORDER_STEPS.map((step, idx) => (
+              <div key={step.key} style={{
+                width: 8, height: 8, borderRadius: "50%",
+                background: idx <= currentStepIdx ? "#22c55e" : "rgba(255,255,255,0.15)",
+                transition: "background 0.3s",
+              }} />
+            ))}
+          </div>
+          <button
+            onClick={() => { setActiveTab("orders"); setShowOrderTracker(true); }}
+            style={{
+              background: "#e85d04",
+              border: "none",
+              borderRadius: 8,
+              padding: "5px 12px",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              cursor: "pointer",
+              position: "relative",
+            }}
+          >
+            Track
+          </button>
+        </div>
+      )}
+
       {/* Nav */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 50,
