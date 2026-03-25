@@ -79,6 +79,7 @@ export default function FreshBite() {
   const [showWheel, setShowWheel] = useState(false);
   const [wheelSpinning, setWheelSpinning] = useState(false);
   const [wheelResult, setWheelResult] = useState<string | null>(null);
+  const [selectedTip, setSelectedTip] = useState<string>("");
   const msgIdRef = useRef(1);
 
   const categories = [
@@ -915,10 +916,47 @@ export default function FreshBite() {
 
                   {/* Social Share */}
                   <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
-                    <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🍕 Just ordered from FreshBite! My order ${activeOrder.id} is on the way! Total: ₹${activeOrder.total} #FoodDelivery`)}`, "_blank")} style={{ flex: 1, background: "#1DA1F2", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>🐦 Share</button>
-                    <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🍕 FreshBite order ${activeOrder.id} incoming! Total: ₹${activeOrder.total}. Track live: https://freshbite.app/track/${activeOrder.id}`)}`, "_blank")} style={{ flex: 1, background: "#25D366", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📱 WhatsApp</button>
-                    <button onClick={() => { navigator.clipboard.writeText(`FreshBite Order ${activeOrder.id} — ₹${activeOrder.total} — Track: https://freshbite.app/track/${activeOrder.id}`).catch(() => {}); }} style={{ flex: 1, background: "#f5f5f0", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📋 Copy</button>
+                    <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🍕 Just ordered from FreshBite! My order ${activeOrder.id} is on the way! Total: ₹${activeOrder.total} #FoodDelivery`)}`, "_blank")} style={{ flex: 1, background: "#1DA1F2", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>🐦</button>
+                    <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🍕 FreshBite order ${activeOrder.id} incoming! Total: ₹${activeOrder.total}. Track: https://freshbite.app/track/${activeOrder.id}`)}`, "_blank")} style={{ flex: 1, background: "#25D366", border: "none", borderRadius: 10, padding: "10px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📱</button>
+                    <button onClick={() => { navigator.clipboard.writeText(`FreshBite Order ${activeOrder.id} — ₹${activeOrder.total}`).catch(() => {}); }} style={{ flex: 1, background: "rgba(0,0,0,0.05)", border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>📋</button>
                   </div>
+
+                  {/* Tip the Driver */}
+                  {activeOrder.status === "out-for-delivery" && (
+                    <div style={{ marginTop: 14, background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 12, padding: 14 }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.82rem", marginBottom: 8 }}>💰 Tip Rajesh K.</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {["₹10", "₹20", "₹50", "Custom"].map(tip => (
+                          <button
+                            key={tip}
+                            onClick={() => {
+                              if (tip === "Custom") {
+                                const amt = prompt("Enter tip amount:");
+                                if (amt) { setSelectedTip(`₹${amt}`); addNotification(`💰 Tipped ₹${amt} to Rajesh!`, "success"); }
+                              } else {
+                                setSelectedTip(tip);
+                                addNotification(`💰 Tipped ${tip} to Rajesh!`, "success");
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              background: selectedTip === tip ? "#22c55e" : "white",
+                              color: selectedTip === tip ? "white" : "#333",
+                              border: `1px solid ${selectedTip === tip ? "#22c55e" : "rgba(0,0,0,0.1)"}`,
+                              borderRadius: 8,
+                              padding: "6px 4px",
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {tip}
+                          </button>
+                        ))}
+                      </div>
+                      {selectedTip && <div style={{ marginTop: 8, fontSize: "0.78rem", color: "#22c55e", fontWeight: 600 }}>✅ Tipped {selectedTip}!</div>}
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
