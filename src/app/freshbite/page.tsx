@@ -699,6 +699,54 @@ export default function FreshBite() {
                     <div style={{ fontSize: "0.8rem", color: "#888", marginTop: 4 }}>Estimated delivery time</div>
                   </div>
 
+                  {/* Delivery simulation - shown when out for delivery */}
+                  {activeOrder.status === "out-for-delivery" && (
+                    <div style={{
+                      marginTop: 16,
+                      background: "rgba(0,0,0,0.03)",
+                      border: "1px solid rgba(0,0,0,0.06)",
+                      borderRadius: 12,
+                      padding: 14,
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: "0.82rem" }}>🛵 Partner nearby!</div>
+                          <div style={{ fontSize: "0.72rem", color: "#888" }}>Rajesh K. · ⭐ 4.9 · 127 deliveries</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button style={{ background: "#22c55e", border: "none", borderRadius: 8, width: 34, height: 34, color: "white", cursor: "pointer", fontSize: "1rem" }}>📞</button>
+                          <button style={{ background: "#3b82f6", border: "none", borderRadius: 8, width: 34, height: 34, color: "white", cursor: "pointer", fontSize: "1rem" }}>💬</button>
+                        </div>
+                      </div>
+                      {/* Mini map simulation */}
+                      <div style={{ position: "relative", height: 60, background: "rgba(0,0,0,0.04)", borderRadius: 8, overflow: "hidden" }}>
+                        <div style={{ position: "absolute", left: "5%", top: "50%", transform: "translateY(-50%)", fontSize: "1.2rem" }}>🏪</div>
+                        <div style={{ position: "absolute", right: "5%", top: "50%", transform: "translateY(-50%)", fontSize: "1.2rem" }}>🏠</div>
+                        <div style={{ 
+                          position: "absolute", 
+                          left: `${Math.max(10, Math.min(85, 100 - activeOrder.eta * 4))}%`,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          fontSize: "1.3rem",
+                          animation: "bikeMove 2s ease-in-out infinite",
+                          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                        }}>🛵</div>
+                        <div style={{ 
+                          position: "absolute", 
+                          left: `${Math.max(10, Math.min(85, 100 - activeOrder.eta * 4 - 8))}%`,
+                          top: "50%",
+                          transform: "translate(-50%, -50%)",
+                          fontSize: "0.8rem",
+                          color: "#666",
+                          fontWeight: 700,
+                        }}>{activeOrder.eta}m away</div>
+                      </div>
+                      <style>{`
+                        @keyframes bikeMove { 0%, 100% { transform: translateY(-50%) rotate(-3deg); } 50% { transform: translateY(-50%) rotate(3deg); } }
+                      `}</style>
+                    </div>
+                  )}
+
                   <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
                     <span style={{ color: "#888" }}>Total paid</span>
                     <span style={{ fontWeight: 700 }}>₹{activeOrder.total}</span>

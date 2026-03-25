@@ -46,6 +46,7 @@ export default function RocketGame() {
   const [botInput, setBotInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const msgIdRef = useRef(0);
   
@@ -148,6 +149,33 @@ export default function RocketGame() {
     }
   };
 
+  // Sound effects using Web Audio API
+  const playSound = (type: "coin" | "explosion" | "powerup" | "levelup" | "achievement") => {
+    if (!soundEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      const sounds: Record<string, [number, number, number]> = {
+        coin: [880, 0.1, 0.15],
+        explosion: [150, 0.3, 0.2],
+        powerup: [660, 0.15, 0.12],
+        levelup: [523, 0.2, 0.15],
+        achievement: [784, 0.3, 0.18],
+      };
+      const [freq, duration, vol] = sounds[type] || [440, 0.2, 0.1];
+      oscillator.frequency.value = freq;
+      oscillator.type = "sine";
+      gainNode.gain.setValueAtTime(vol, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + duration);
+    } catch (e) { /* audio not available */ }
+  };
+
   const shareScore = () => {
     const text = `🚀 I scored ${gameState.score} points in Rocket Game! High Score: ${gameState.highScore}! Level ${gameState.level}! Can you beat me? #RocketGame #ActionBot`;
     if (navigator.share) {
@@ -169,6 +197,16 @@ export default function RocketGame() {
     spawnObstacles(W, H, 1);
     setGameState(prev => ({ ...prev, score: 0, level: 1, lives: 3, gameOver: false, paused: false, started: true, combo: 0, slowmo: false }));
   }, [initStars, spawnObstacles]);
+
+  const saveScore = useCallback((score: number, level: number) => {
+    try {
+      const entry = { score, level, date: new Date().toLocaleDateString() };
+      const existing = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || "[]") as typeof entry[];
+      const updated = [...existing.filter((e) => e.score < score), entry].sort((a, b) => b.score - a.score).slice(0, 10);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(updated));
+      setLeaderboard(updated);
+    } catch {}
+  }, []);
 
   const smartResponses = [
     { patterns: [/score|points|how (much|many)/i, /what.*score/i], response: () => `Your score is ${gameState.score} points! Combo: ${gameState.combo}x 🎯` },
@@ -207,6 +245,7 @@ export default function RocketGame() {
         setUnlockedAchievements(prev => {
           if (prev.includes(ach.id)) return prev;
           setShowAchievement({ label: ach.label, emoji: ach.emoji });
+          playSound("achievement");
           // Spawn confetti
           const colors = ["#FF6B35", "#FFD93D", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"];
           const newConfetti = Array.from({ length: 30 }, (_, i) => ({
@@ -415,6 +454,7 @@ export default function RocketGame() {
           if (newLives <= 0) {
             const newHigh = Math.max(prev.highScore, prev.score);
             try { localStorage.setItem(SAVED_KEY, JSON.stringify({ score: prev.score, level: prev.level, highScore: newHigh })); } catch {}
+            saveScore(prev.score, prev.level);
             return { ...prev, lives: 0, gameOver: true, score: prev.score, highScore: newHigh, combo: newCombo };
           }
           return { ...prev, lives: newLives, combo: newCombo };
@@ -614,7 +654,6 @@ export default function RocketGame() {
                 </div>
               )}
             </div>
-            {/* Quick suggestions */}
             {botMessages.length <= 1 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
                 {["Score?", "Tip?", "High score?", "Fuel?"].map(s => (
@@ -630,6 +669,39 @@ export default function RocketGame() {
               <button onClick={() => sendBotMessage(botInput)} style={{ background: "#FF6B35", border: "none", borderRadius: 8, padding: "8px 14px", color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }}>➤</button>
             </div>
             <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.65rem", marginTop: 6, textAlign: "center" }}>💡 Context-aware: I know your score, fuel, lives, combo, shield!</p>
+          </div>
+        )}
+
+        {showLeaderboard && (
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: "0.75rem", display: "flex", flexDirection: "column", maxHeight: canvasHeight }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 18 }}>🏆</span>
+              <span style={{ fontWeight: 700, fontSize: "0.85rem" }}>Leaderboard</span>
+              <button onClick={() => setShowLeaderboard(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", cursor: "pointer" }}>✕</button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+              {(() => {
+                const allScores = [...leaderboard];
+                if (gameState.score > 0) {
+                  const exists = allScores.find(s => s.score === gameState.score);
+                  if (!exists) allScores.push({ score: gameState.score, level: gameState.level, date: "Just now" });
+                }
+                return allScores.length === 0 ? (
+                  <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.8rem", textAlign: "center", marginTop: 40 }}>Play a game to get on the leaderboard! 🏆</p>
+                ) : allScores.sort((a, b) => b.score - a.score).slice(0, 10).map((entry, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: entry.score === gameState.score && gameState.started ? "rgba(255,107,53,0.2)" : "rgba(255,255,255,0.04)", borderRadius: 10, padding: "8px 12px", border: entry.score === gameState.score && gameState.started ? "1px solid #FF6B35" : "1px solid transparent" }}>
+                    <span style={{ fontWeight: 800, fontSize: 14, color: i === 0 ? "#fbbf24" : i === 1 ? "#d1d5db" : i === 2 ? "#cd7f32" : "#888", width: 24, textAlign: "center" }}>
+                      {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i+1}`}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{entry.score.toLocaleString()} pts</div>
+                      <div style={{ fontSize: 11, color: "#888" }}>Level {entry.level} · {entry.date}</div>
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.65rem", marginTop: 8, textAlign: "center" }}>Top 10 scores · Saved locally</p>
           </div>
         )}
       </div>
