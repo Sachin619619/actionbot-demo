@@ -45,6 +45,19 @@ export default function RocketGame() {
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const msgIdRef = useRef(0);
+  
+  // Achievements
+  const ACHIEVEMENTS = [
+    { id: "first_coin", label: "First Coin!", emoji: "🪙", condition: (gs: GameState) => gs.score >= 10 },
+    { id: "level_2", label: "Level Up!", emoji: "⭐", condition: (gs: GameState) => gs.level >= 2 },
+    { id: "score_100", label: "Century!", emoji: "💯", condition: (gs: GameState) => gs.score >= 100 },
+    { id: "combo_3", label: "Combo Master!", emoji: "🔥", condition: (gs: GameState) => gs.combo >= 3 },
+    { id: "score_500", label: "High Flyer!", emoji: "🚀", condition: (gs: GameState) => gs.score >= 500 },
+    { id: "level_5", label: "Space Ace!", emoji: "👑", condition: (gs: GameState) => gs.level >= 5 },
+    { id: "no_hit", label: "Untouchable!", emoji: "💎", condition: (gs: GameState) => gs.lives === 3 && gs.score >= 50 },
+  ];
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
+  const [showAchievement, setShowAchievement] = useState<{ label: string; emoji: string } | null>(null);
 
   const rocketRef = useRef<Rocket>({
     x: 300, y: 300, vx: 0, vy: 0, angle: 0, fuel: 100,
@@ -173,6 +186,19 @@ export default function RocketGame() {
       "Check the HUD for fuel and lives! 📊",
     ];
     return contextual[Math.floor(Math.random() * contextual.length)];
+
+  const checkAchievements = useCallback((gs: GameState) => {
+    ACHIEVEMENTS.forEach(ach => {
+      if (!unlockedAchievements.includes(ach.id) && ach.condition(gs)) {
+        setUnlockedAchievements(prev => {
+          if (prev.includes(ach.id)) return prev;
+          setShowAchievement({ label: ach.label, emoji: ach.emoji });
+          setTimeout(() => setShowAchievement(null), 3000);
+          return [...prev, ach.id];
+        });
+      }
+    });
+  }, [unlockedAchievements]);
   };
 
   const sendBotMessage = (input: string) => {

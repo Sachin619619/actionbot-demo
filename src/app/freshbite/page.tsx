@@ -63,6 +63,7 @@ export default function FreshBite() {
     { id: "welcome", from: "bot", text: "👋 Welcome to FreshBite! I'm your AI ordering assistant.\n\nTry saying:\n• \"Order pizza\"\n• \"What's popular?\"\n• \"I want something healthy\"\n• \"Show my rewards\"", timestamp: Date.now() },
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -216,6 +217,42 @@ export default function FreshBite() {
     
     return "🤖 I can help you order food! Try:\n• \"Order pizza\"\n• \"Show popular items\"\n• \"What's my rewards?\"\n• \"Track my order\"\n• \"Show my cart\"";
   };
+
+  const toggleVoice = useCallback(() => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      alert("Voice input not supported in this browser. Try Chrome!");
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+      return;
+    }
+    
+    setIsListening(true);
+    recognition.start();
+    
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setChatInput(transcript);
+      setIsListening(false);
+      setTimeout(() => handleChatSend(transcript), 300);
+    };
+    
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  }, [isListening]); // eslint-disable-line
 
   const handleChatSend = useCallback((input: string) => {
     const text = input.trim();
@@ -809,6 +846,27 @@ export default function FreshBite() {
                 outline: "none",
               }}
             />
+            <button
+              onClick={toggleVoice}
+              title="Voice input"
+              style={{
+                background: isListening ? "#ef4444" : "rgba(0,0,0,0.08)",
+                border: "none",
+                borderRadius: 12,
+                width: 40,
+                height: 40,
+                color: isListening ? "white" : "#888",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s",
+                animation: isListening ? "pulse 1s infinite" : "none",
+              }}
+            >
+              {isListening ? "🔴" : "🎤"}
+            </button>
             <button
               onClick={() => handleChatSend(chatInput)}
               style={{
