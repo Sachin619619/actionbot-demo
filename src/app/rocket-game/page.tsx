@@ -540,6 +540,13 @@ export default function RocketGame() {
       ctx.fillText(`Level: ${gameState.level}`, 16, 48);
       ctx.fillText(`Lives: ${Array.from({ length: Math.max(0, gameState.lives) }).map(() => "❤️").join("")}`, 16, 68);
       if (gameState.combo > 1) { ctx.fillStyle = "#fbbf24"; ctx.fillText(`Combo: ${gameState.combo}x 🔥`, 16, 88); }
+      // Speed run timer
+      if (speedRunStart) {
+        const elapsed = Math.floor((Date.now() - speedRunStart) / 1000);
+        ctx.fillStyle = "#a855f7";
+        ctx.font = "12px monospace";
+        ctx.fillText(`⏱️ ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, "0")}`, 16, 108);
+      }
 
       ctx.fillStyle = `rgba(0,0,0,${hudAlpha})`; ctx.fillRect(8, 108, 140, 14);
       ctx.fillStyle = rocket.fuel > 30 ? "#22c55e" : rocket.fuel > 15 ? "#eab308" : "#ef4444";
@@ -760,6 +767,7 @@ export default function RocketGame() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <span style={{ fontSize: 18 }}>🏆</span>
               <span style={{ fontWeight: 700, fontSize: "0.85rem" }}>Leaderboard</span>
+              {speedRunStart && <span style={{ fontSize: "0.7rem", background: "rgba(168,85,247,0.2)", color: "#a855f7", borderRadius: 8, padding: "2px 8px", fontWeight: 700 }}>⏱️ {Math.floor(speedRunTime / 60)}:{(speedRunTime % 60).toString().padStart(2, "0")}</span>}
               <button onClick={() => setShowLeaderboard(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "4px 10px", color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", cursor: "pointer" }}>✕</button>
             </div>
             <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
@@ -783,6 +791,18 @@ export default function RocketGame() {
                   </div>
                 ));
               })()}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button
+                onClick={() => {
+                  const text = `🚀 I scored ${gameState.highScore} in Rocket Game! Level ${gameState.level}. Can you beat me?`;
+                  if (navigator.share) { navigator.share({ title: "Rocket Game", text }).catch(() => {}); }
+                  else { navigator.clipboard.writeText(text).catch(() => {}); alert("Score copied!"); }
+                }}
+                style={{ flex: 1, background: "#1DA1F2", border: "none", borderRadius: 10, padding: "8px", color: "white", fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }}
+              >
+                🐦 Share Score
+              </button>
             </div>
             <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.65rem", marginTop: 8, textAlign: "center" }}>Top 10 scores · Saved locally</p>
           </div>
