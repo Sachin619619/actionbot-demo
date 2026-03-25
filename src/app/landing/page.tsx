@@ -24,6 +24,11 @@ const demoApps = [
 
 export default function Landing() {
   const [stats, setStats] = useState({ tenants: 0, messages: 0, uptime: 0 });
+  const [darkMode, setDarkMode] = useState(true);
+  const bgColor = darkMode ? "#0a0a1a" : "#f4f4f4";
+  const textColor = darkMode ? "white" : "#1a1a1a";
+  const cardBg = darkMode ? "rgba(255,255,255,0.05)" : "white";
+  const cardBorder = darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)";
   
   useEffect(() => {
     // Animate counters
