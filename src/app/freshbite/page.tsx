@@ -65,6 +65,8 @@ export default function FreshBite() {
   const [chatInput, setChatInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("English");
+  const LANGUAGES = ["English", "हिंदी", "ಕನ್ನಡ", "தமிழ்", "తెలుగు"];
   const [notifPermission, setNotifPermission] = useState<"default" | "granted" | "denied">("default");
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
