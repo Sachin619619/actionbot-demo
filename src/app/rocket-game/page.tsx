@@ -41,6 +41,10 @@ export default function RocketGame() {
   const [showBot, setShowBot] = useState(false);
   const [botMessages, setBotMessages] = useState<{ from: string; text: string; time: string }[]>([]);
   const [botInput, setBotInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
+  const msgIdRef = useRef(0);
 
   const rocketRef = useRef<Rocket>({
     x: 300, y: 300, vx: 0, vy: 0, angle: 0, fuel: 100,
@@ -177,9 +181,37 @@ export default function RocketGame() {
     const response = getBotResponse(userMsg);
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setBotMessages(prev => [...prev, { from: "user", text: userMsg, time: timeStr }, { from: "bot", text: response, time: timeStr }]);
-    if (response === "RESTART_GAME") resetGame();
+    const tempId = msgIdRef.current++;
+    setBotMessages(prev => [...prev, { from: "user", text: userMsg, time: timeStr }]);
+    if (response === "RESTART_GAME") {
+      setBotMessages(prev => [...prev, { from: "bot", text: "🔄 Restarting game...", time: timeStr }]);
+      setTimeout(resetGame, 800);
+      setBotInput("");
+      return;
+    }
+    setIsTyping(true);
     setBotInput("");
+    // Streaming effect
+    const words = response.split(" ");
+    let displayed = "";
+    let wordIdx = 0;
+    const streamInterval = setInterval(() => {
+      if (wordIdx < words.length) {
+        displayed += (displayed ? " " : "") + words[wordIdx];
+        setBotMessages(prev => {
+          const filtered = prev.filter(m => m.from !== "bot" || m.text !== "");
+          const existing = filtered.find(m => (m as any).tempId === tempId);
+          if (existing) {
+            return filtered.map(m => (m as any).tempId === tempId ? { ...m, text: displayed } : m);
+          }
+          return [...filtered, { from: "bot", text: displayed, time: timeStr, tempId }];
+        });
+        wordIdx++;
+      } else {
+        clearInterval(streamInterval);
+        setIsTyping(false);
+      }
+    }, 35);
   };
 
   useEffect(() => {
@@ -192,6 +224,33 @@ export default function RocketGame() {
     window.addEventListener("keyup", handleKeyUp);
     return () => { window.removeEventListener("keydown", handleKey); window.removeEventListener("keyup", handleKeyUp); };
   }, []);
+  // Init speech recognition
+  useEffect(() => {
+    if (typeof window !== "undefined" && ("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = "en-US";
+      rec.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setBotInput(transcript);
+        setIsListening(false);
+        setTimeout(() => sendBotMessage(transcript), 100);
+      };
+      rec.onerror = () => setIsListening(false);
+      rec.onend = () => setIsListening(false);
+      setRecognition(rec);
+    }
+  }, []);
+
+  const startVoiceInput = () => {
+    if (recognition) {
+      setIsListening(true);
+      recognition.start();
+    }
+  };
+
 
   useEffect(() => {
     if (!gameState.started || gameState.paused || gameState.gameOver) return;
@@ -481,22 +540,45 @@ export default function RocketGame() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 18 }}>🤖</span>
               <span style={{ fontWeight: 700, fontSize: "0.85rem" }}>AI Copilot</span>
-              <span style={{ marginLeft: "auto", background: "#22c55e", color: "white", fontSize: "0.6rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>Online</span>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: isListening ? "#ef4444" : "#22c55e", animation: isListening ? "listening 0.7s ease-in-out infinite" : "none" }} />
+                <span style={{ background: isListening ? "#ef4444" : "#22c55e", color: "white", fontSize: "0.6rem", padding: "2px 8px", borderRadius: 100, fontWeight: 600 }}>{isListening ? "Listening..." : "Online"}</span>
+              </div>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", background: "rgba(0,0,0,0.25)", borderRadius: 10, padding: "0.6rem", marginBottom: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ flex: 1, overflowY: "auto", background: "rgba(0,0,0,0.25)", borderRadius: 10, padding: "0.6rem", marginBottom: 6, display: "flex", flexDirection: "column", gap: 6, scrollbarWidth: "thin" }}>
               {botMessages.length === 0 && <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.75rem", textAlign: "center", marginTop: 40 }}>Ask about score, controls, power-ups... 🤖</p>}
               {botMessages.map((msg, i) => (
                 <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: msg.from === "user" ? "flex-end" : "flex-start" }}>
-                  <div style={{ maxWidth: "85%", background: msg.from === "user" ? "#FF6B35" : "rgba(255,255,255,0.1)", color: "white", borderRadius: msg.from === "user" ? "10px 10px 2px 10px" : "10px 10px 10px 2px", padding: "6px 12px", fontSize: "0.75rem", lineHeight: 1.5 }}>{msg.text}</div>
+                  <div style={{ maxWidth: "85%", background: msg.from === "user" ? "linear-gradient(135deg, #FF6B35, #FF8C42)" : "rgba(255,255,255,0.1)", color: "white", borderRadius: msg.from === "user" ? "10px 10px 2px 10px" : "10px 10px 10px 2px", padding: "6px 12px", fontSize: "0.75rem", lineHeight: 1.5, whiteSpace: "pre-wrap", animation: msg.from === "bot" ? "slideUp 0.3s ease" : "none" }}>{msg.text}</div>
                   <span style={{ fontSize: 9, color: "#555", marginTop: 2 }}>{msg.time}</span>
                 </div>
               ))}
+              {isTyping && (
+                <div style={{ display: "flex", alignItems: "flex-start" }}>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: "10px 10px 10px 2px", padding: "6px 12px", display: "flex", gap: 3 }}>
+                    <span className="typing-dot" style={{ color: "#FF6B35", fontSize: "0.8rem" }}>●</span>
+                    <span className="typing-dot" style={{ color: "#FF6B35", fontSize: "0.8rem", animationDelay: "0.2s" }}>●</span>
+                    <span className="typing-dot" style={{ color: "#FF6B35", fontSize: "0.8rem", animationDelay: "0.4s" }}>●</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
+            {/* Quick suggestions */}
+            {botMessages.length <= 1 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
+                {["Score?", "Tip?", "High score?", "Fuel?"].map(s => (
+                  <button key={s} onClick={() => sendBotMessage(s)} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 100, padding: "3px 10px", color: "rgba(255,255,255,0.6)", fontSize: "0.68rem", cursor: "pointer" }}>{s}</button>
+                ))}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input value={botInput} onChange={e => setBotInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") sendBotMessage(botInput); }} placeholder="Ask me anything..." style={{ flex: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 12px", color: "white", fontSize: "0.8rem", outline: "none" }} />
-              <button onClick={() => sendBotMessage(botInput)} style={{ background: "#FF6B35", border: "none", borderRadius: 8, padding: "8px 14px", color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }}>Send</button>
+              {recognition && (
+                <button onClick={startVoiceInput} style={{ background: isListening ? "#ef4444" : "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 10px", color: "white", cursor: "pointer", fontSize: "1rem", animation: isListening ? "listening 0.7s ease-in-out infinite" : "none" }} title="Voice input">🎤</button>
+              )}
+              <button onClick={() => sendBotMessage(botInput)} style={{ background: "#FF6B35", border: "none", borderRadius: 8, padding: "8px 14px", color: "white", fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }}>➤</button>
             </div>
-            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.65rem", marginTop: 6, textAlign: "center" }}>Try: "what's my score?", "tip", "how do I play?"</p>
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "0.65rem", marginTop: 6, textAlign: "center" }}>💡 Context-aware: I know your score, fuel, lives, combo, shield!</p>
           </div>
         )}
       </div>
