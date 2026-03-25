@@ -47,6 +47,8 @@ export default function RocketGame() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const msgIdRef = useRef(0);
   

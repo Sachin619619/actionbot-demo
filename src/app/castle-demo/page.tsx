@@ -142,6 +142,9 @@ export default function CastleDemo() {
                     <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                       <button onClick={() => setSelected(p)} style={{ background: "#1B1C15", border: "none", borderRadius: 10, padding: "8px 18px", color: "white", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>View Details →</button>
                       <button onClick={() => toggleSave(p.id)} style={{ background: saved.includes(p.id) ? "#fef3c7" : "#f5f5f0", border: "none", borderRadius: 10, padding: "8px 14px", fontSize: 14, cursor: "pointer" }}>{saved.includes(p.id) ? "❤️ Saved" : "🤍 Save"}</button>
+                      {booked.includes(p.id) && (
+                        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🏰 Just booked ${p.name} at ₹${p.price}/month through Castle Living! Check it out: https://castle.app/pg/${p.id}`)}`, "_blank")} style={{ background: "#25D366", border: "none", borderRadius: 10, padding: "8px 14px", fontSize: 14, color: "white", fontWeight: 700, cursor: "pointer" }}>📱 Share</button>
+                      )}
                     </div>
                   </div>
                 </div>

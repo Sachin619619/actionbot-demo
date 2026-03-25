@@ -60,6 +60,30 @@ export default function RestaurantDashboard() {
   const [activeTab, setActiveTab] = useState<"orders" | "menu" | "overview">("orders");
   const [notification, setNotification] = useState<string | null>(null);
   const notifTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [liveOrder, setLiveOrder] = useState<{id: string; customer: string} | null>(null);
+
+  // Simulate incoming orders
+  useEffect(() => {
+    const customers = ["Priya S.", "Rahul V.", "Ananya P.", "Vikram S.", "Meera J.", "Aditya N.", "Sneha R.", "Arjun M."];
+    const foods = [["Margherita Pizza"], ["Butter Chicken + Naan"], ["Smash Burger x2"], ["Chicken Biryani + Raita"], ["Caesar Salad"]];
+    
+    const interval = setInterval(() => {
+      if (Math.random() > 0.6) {
+        const id = "ORD-" + Math.floor(3000 + Math.random() * 9000);
+        const customer = customers[Math.floor(Math.random() * customers.length)];
+        const food = foods[Math.floor(Math.random() * foods.length)];
+        setLiveOrder({ id, customer });
+        setOrders(prev => [{
+          id, customer, items: food.map((n: string) => ({ name: n, qty: 1, price: 200 + Math.floor(Math.random() * 200) })),
+          total: 300 + Math.floor(Math.random() * 400), status: "pending", time: "Just now",
+          payment: ["UPI", "Cash", "Card"][Math.floor(Math.random() * 3)] as Order["payment"],
+        }, ...prev]);
+        notify(`🆕 New order: ${id} from ${customer}!`);
+        setTimeout(() => setLiveOrder(null), 3000);
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const notify = (msg: string) => {
     setNotification(msg);
