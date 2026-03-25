@@ -62,6 +62,16 @@ const apps = [
     tagColor: "#22c55e",
     accent: "#22c55e",
   },
+  {
+    href: "/widget-demo",
+    emoji: "🔌",
+    title: "Widget Integration Guide",
+    desc: "Step-by-step guide on integrating ActionBot into any website with industry examples for food delivery, PG finder, e-commerce & SaaS.",
+    color: "#0f0f1a",
+    tag: "DEV",
+    tagColor: "#0ea5e9",
+    accent: "#0ea5e9",
+  },
 ];
 
 export default function Home() {
@@ -77,7 +87,7 @@ export default function Home() {
           boxShadow: "0 8px 32px rgba(232,93,4,0.3)",
         }}>🏰</div>
         <h1 style={{ fontSize: "1.6rem", fontWeight: 700, marginBottom: "0.375rem" }}>ActionBot Demo</h1>
-        <p style={{ color: "#888", fontSize: "0.85rem" }}>6 demo apps showcasing ActionBot capabilities</p>
+        <p style={{ color: "#888", fontSize: "0.85rem" }}>7 demo apps showcasing ActionBot capabilities</p>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>

@@ -27,6 +27,8 @@ export default function DriverApp() {
   const [earnings, setEarnings] = useState(1247);
   const [deliveries, setDeliveries] = useState(12);
   const [rating, setRating] = useState(4.9);
+  const [streak, setStreak] = useState(5);
+  const [isOnline, setIsOnline] = useState(true);
   const [showEarnModal, setShowEarnModal] = useState(false);
   const [currentEta, setCurrentEta] = useState(0);
   const [etaInterval, setEtaInterval] = useState<ReturnType<typeof setInterval> | null>(null);
@@ -60,6 +62,7 @@ export default function DriverApp() {
     setTasks(prev => prev.filter(t => t.id !== activeTask.id));
     setActiveTask(null);
     setShowEarnModal(true);
+    setStreak(prev => prev + 1);
     setTimeout(() => setShowEarnModal(false), 3000);
   };
 
@@ -94,7 +97,7 @@ export default function DriverApp() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: 16 }}>Alex Kumar</div>
-              <div style={{ fontSize: 12, color: "#22c55e" }}>● Online</div>
+              <div style={{ fontSize: 12, color: isOnline ? "#22c55e" : "#888" }}>● {isOnline ? "Online" : "Offline"}</div>
             </div>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
@@ -109,7 +112,79 @@ export default function DriverApp() {
             </div>
           </div>
         </div>
+        <button 
+          onClick={() => setIsOnline(!isOnline)}
+          style={{
+            background: isOnline ? "#ef4444" : "#22c55e",
+            border: "none",
+            borderRadius: 8,
+            padding: "6px 14px",
+            color: "white",
+            fontWeight: 700,
+            fontSize: "0.78rem",
+            cursor: "pointer",
+            marginTop: 8,
+          }}
+        >
+          {isOnline ? "Go Offline" : "Go Online"}
+        </button>
       </div>
+
+      {/* Streak Banner */}
+      {streak > 0 && (
+        <div style={{ background: "linear-gradient(135deg, #1a1a1a, #2d1f0a)", padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontSize: "1.3rem" }}>🔥</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{streak} Delivery Streak!</div>
+            <div style={{ fontSize: "0.72rem", color: "#888" }}>Complete {7 - streak} more for a bonus</div>
+          </div>
+          <div style={{ background: "rgba(255,215,0,0.15)", border: "1px solid rgba(255,215,0,0.3)", borderRadius: 8, padding: "4px 12px" }}>
+            <span style={{ fontSize: "0.75rem", color: "#FFD700", fontWeight: 700 }}>₹{streak * 15} bonus</span>
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Earnings Heatmap */}
+      {!activeTask && (
+        <div style={{ padding: "16px 20px" }}>
+          <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 12 }}>📊 This Week</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 16 }}>
+            {[
+              { day: "Mon", amount: 847, highlight: false },
+              { day: "Tue", amount: 1234, highlight: true },
+              { day: "Wed", amount: 692, highlight: false },
+              { day: "Thu", amount: 1580, highlight: true },
+              { day: "Fri", amount: 1105, highlight: false },
+              { day: "Sat", amount: 2340, highlight: true },
+              { day: "Sun", amount: 956, highlight: false },
+            ].map((d, i) => (
+              <div key={i} style={{ textAlign: "center" }}>
+                <div style={{
+                  height: 48,
+                  background: d.highlight 
+                    ? "linear-gradient(180deg, #e85d04, #ff8c42)" 
+                    : "rgba(255,255,255,0.05)",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                  paddingBottom: 4,
+                  border: d.highlight ? "1px solid rgba(232,93,4,0.3)" : "1px solid rgba(255,255,255,0.04)",
+                }}>
+                  <span style={{ fontSize: "0.6rem", color: d.highlight ? "white" : "#666", fontWeight: 700 }}>{d.day[0]}</span>
+                </div>
+                <div style={{ fontSize: "0.62rem", color: "#888", marginTop: 4 }}>₹{d.amount}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem" }}>
+              <span style={{ color: "#888" }}>Weekly total</span>
+              <span style={{ fontWeight: 700 }}>₹{847 + 1234 + 692 + 1580 + 1105 + 2340 + 956}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Active Delivery Banner */}
       {activeTask && (
