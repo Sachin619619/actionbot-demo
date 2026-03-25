@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreshBite — Food Delivery Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fafaf7;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 40;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { color: #e85d04; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { text-decoration: none; color: #666; font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: #1a1a1a; }
+    .nav-btn { background: #e85d04; color: white; border: none; padding: 8px 20px; border-radius: 100px; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+    /* Hero */
+    .hero {
+      padding: 80px 20px 60px;
+      text-align: center;
+      background: linear-gradient(135deg, #fff8f0 0%, #fafaf7 50%, #f0f7ff 100%);
+    }
+    .hero-badge {
+      display: inline-block; padding: 6px 16px; background: #fff3e6;
+      border: 1px solid #ffe0b2; border-radius: 100px; font-size: 13px;
+      font-weight: 600; color: #e85d04; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 6vw, 56px); font-weight: 800;
+      line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 16px;
+    }
+    .hero h1 span { color: #e85d04; }
+    .hero p { color: #666; font-size: 17px; max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #1a1a1a; color: white; padding: 14px 32px;
+      border-radius: 100px; font-weight: 700; font-size: 15px;
+      text-decoration: none; transition: transform 0.2s;
+    }
+    .hero-cta:hover { transform: translateY(-2px); }
+
+    /* Stats */
+    .stats {
+      display: flex; justify-content: center; gap: 40px;
+      padding: 40px 20px; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: #e85d04; }
+    .stat-label { font-size: 13px; color: #888; margin-top: 4px; }
+
+    /* Menu */
+    .menu-section { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
+    .menu-section h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+    .menu-section p { color: #888; margin-bottom: 32px; }
+
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .menu-card {
+      background: white; border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+    .menu-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .menu-img {
+      height: 160px; background-size: cover; background-position: center;
+      position: relative;
+    }
+    .menu-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: rgba(0,0,0,0.7); color: white; padding: 4px 10px;
+      border-radius: 100px; font-size: 11px; font-weight: 600;
+      backdrop-filter: blur(10px);
+    }
+    .menu-info { padding: 16px; }
+    .menu-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .menu-desc { font-size: 13px; color: #888; margin-bottom: 12px; line-height: 1.4; }
+    .menu-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .menu-price { font-weight: 800; font-size: 18px; color: #e85d04; }
+    .menu-rating { font-size: 13px; color: #888; }
+    .add-btn {
+      background: #e85d04; color: white; border: none; padding: 8px 18px;
+      border-radius: 100px; font-weight: 700; font-size: 13px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-btn:hover { background: #d4500a; }
+
+    /* Features */
+    .features {
+      background: #1a1a1a; color: white; padding: 60px 20px;
+      text-align: center;
+    }
+    .features h2 { font-size: 28px; font-weight: 800; margin-bottom: 40px; }
+    .features-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; max-width: 800px; margin: 0 auto; }
+    .feature-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 24px; width: 220px; text-align: left;
+    }
+    .feature-icon { font-size: 28px; margin-bottom: 12px; }
+    .feature-title { font-weight: 700; margin-bottom: 6px; }
+    .feature-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+    /* Integration Banner */
+    .integration-banner {
+      max-width: 900px; margin: 40px auto; padding: 0 20px;
+    }
+    .integration-card {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 20px; padding: 40px; color: white;
+      display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
+    }
+    .integration-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .integration-card p { color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.6; }
+    .integration-code {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 16px 20px; font-family: monospace;
+      font-size: 12px; color: #e85d04; white-space: pre-wrap; word-break: break-all;
+      flex: 1; min-width: 280px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center; padding: 40px 20px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      color: #888; font-size: 13px;
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stats { gap: 20px; }
+      .stat-num { font-size: 22px; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .features-grid { flex-direction: column; align-items: center; }
+      .integration-card { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="logo">Fresh<span>Bite</span> 🍕</div>
+    <div class="nav-links">
+      <a href="#menu">Menu</a>
+      <a href="#features">Features</a>
+      <a href="#integration">Integration</a>
+    </div>
+    <button class="nav-btn">Order Now</button>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">🔥 #1 Food Delivery in Town</div>
+    <h1>Delicious food,<br><span>delivered fast</span></h1>
+    <p>Order from 50+ restaurants near you. Fresh ingredients, fast delivery, and now with AI-powered ordering via our ActionBot assistant!</p>
+    <a href="#menu" class="hero-cta">Browse Menu →</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">50+</div>
+      <div class="stat-label">Restaurants</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">15K</div>
+      <div class="stat-label">Orders/day</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">4.8</div>
+      <div class="stat-label">Avg Rating</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">18min</div>
+      <div class="stat-label">Avg Delivery</div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="menu-section" id="menu">
+    <h2>Today's Specials 🍽️</h2>
+    <p>Fresh picks curated just for you</p>
+    <div class="menu-grid">
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&q=80')">
+          <span class="menu-badge">🔥 Bestseller</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Margherita Pizza</div>
+          <div class="menu-desc">Classic thin crust with fresh mozzarella, basil & tomato sauce</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹299</span>
+            <span class="menu-rating">⭐ 4.9 (234)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&q=80')">
+          <span class="menu-badge">⚡ 15 min</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Butter Chicken</div>
+          <div class="menu-desc">Creamy tomato gravy with tender chicken, served with naan</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹349</span>
+            <span class="menu-rating">⭐ 4.8 (189)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80')">
+          <span class="menu-badge">🥗 Healthy</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Caesar Salad Bowl</div>
+          <div class="menu-desc">Crispy romaine, parmesan, croutons & creamy caesar dressing</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹199</span>
+            <span class="menu-rating">⭐ 4.7 (92)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80')">
+          <span class="menu-badge">🍔 New</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Smash Burger</div>
+          <div class="menu-desc">Double smashed patty, cheddar, pickles, special sauce</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹249</span>
+            <span class="menu-rating">⭐ 4.9 (156)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&q=80')">
+          <span class="menu-badge">🌶️ Spicy</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Chicken Biryani</div>
+          <div class="menu-desc">Hyderabadi dum biryani with raita and salan</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹279</span>
+            <span class="menu-rating">⭐ 4.8 (312)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&q=80')">
+          <span class="menu-badge">🧁 Dessert</span>
+        </div>
+        <div class="menu-info">
+          <div class="menu-name">Tiramisu</div>
+          <div class="menu-desc">Classic Italian dessert with espresso-soaked ladyfingers</div>
+          <div class="menu-bottom">
+            <span class="menu-price">₹179</span>
+            <span class="menu-rating">⭐ 4.9 (87)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features" id="features">
+    <h2>Why FreshBite? 🚀</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Super Fast</div>
+        <div class="feature-desc">Average delivery in 18 minutes. Hot food, always on time.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Assistant</div>
+        <div class="feature-desc">Chat with our bot to order, track, or get recommendations instantly.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title">Best Prices</div>
+        <div class="feature-desc">No hidden fees. What you see is what you pay.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Widget Features -->
+  <div class="menu-section">
+    <h2>Widget Features ✨</h2>
+    <p>ActionBot comes loaded with premium features out of the box</p>
+    <div class="features-grid" style="max-width: 900px; margin: 0 auto;">
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">🌙</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Dark Mode</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">Auto-detects your system theme preference</div>
+      </div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">🌐</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">5 Languages</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">English, Hindi, Kannada, Tamil & Telugu</div>
+      </div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">💬</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Typing Indicator</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">Animated dots with bot avatar while loading</div>
+      </div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">🔔</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Sound Alerts</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">Chime notification when minimized</div>
+      </div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">📥</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Export Chat</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">Download or clear chat history anytime</div>
+      </div>
+      <div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 20px; width: 200px; text-align: left;">
+        <div style="font-size: 28px; margin-bottom: 8px;">⏰</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Timestamps</div>
+        <div style="font-size: 13px; color: #888; line-height: 1.5;">Every message shows when it was sent</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integration Banner -->
+  <div class="integration-banner" id="integration">
+    <div class="integration-card">
+      <div style="flex: 1; min-width: 240px;">
+        <h3>Powered by ActionBot 🤖</h3>
+        <p>This demo uses ActionBot — a multi-tenant AI action bot platform. Just add one script tag to any website and get a fully functional AI assistant.</p>
+      </div>
+      <div class="integration-code">&lt;script
+  src="https://actionbot-next.vercel.app/widget.js"
+  data-tenant="your-tenant-key"
+  data-api="https://actionbot-next.vercel.app"
+  data-color="#e85d04"
+  data-lang="en"&gt;
+&lt;/script&gt;</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>FreshBite Demo — Powered by <strong>ActionBot</strong> 🤖</p>
+    <p style="margin-top: 8px;">This is a sample integration app to showcase ActionBot widget</p>
+  </footer>
+
+  <!-- ActionBot Widget Integration — just this one script tag! -->
+  <script
+    src="https://actionbot-next.vercel.app/widget.js"
+    data-tenant="freshbite-39eced08d5ec74df4ee6801ba811b518"
+    data-api="https://actionbot-next.vercel.app"
+    data-color="#e85d04"
+  ></script>
+
+</body>
+</html>
