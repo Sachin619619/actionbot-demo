@@ -49,6 +49,8 @@ export default function RocketGame() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
+  const [speedRunStart, setSpeedRunStart] = useState<number | null>(null);
+  const [speedRunTime, setSpeedRunTime] = useState<number>(0);
   const [showSettings, setShowSettings] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
   const msgIdRef = useRef(0);
